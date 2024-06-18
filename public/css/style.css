@@ -1,0 +1,192 @@
+body {
+  background-image: url('/images/bk.png');
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: white;
+  text-align: center;
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start; /* Mengubah menjadi flex-start */
+  align-items: flex-start; /* Mengubah menjadi flex-start */
+  flex-direction: column;
+}
+
+.stickman {
+  position: absolute;
+  bottom: 75px; /* Jarak dari bawah */
+  width: 100px; /* Lebar gambar */
+  height: auto; /* Tinggi akan disesuaikan secara otomatis agar proporsi tetap */
+}
+
+.player {
+  left: 20px; /* Jarak dari kiri */
+  width: 30px;
+  height: auto;
+}
+
+.enemy {
+  right: 20px; /* Jarak dari kanan */
+}
+
+.hidden {
+  display: none;
+}
+
+.timer-container {
+  color: black;
+  font-size: 20px;
+  text-align: center;
+  margin-top: -5px;
+}
+
+.question-container {
+  margin-top: 20px;
+  color: black;
+  width: 100%; /* Lebar 100% */
+  padding: 20px; /* Tambahkan padding */
+  box-sizing: border-box; /* Untuk menghitung border dalam perhitungan lebar */
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.question-kotak {
+  position: relative;
+  border-top: 2px solid black;
+  border-bottom: 2px solid black;
+  border-left: 2px solid black;
+  border-right: 2px solid black;
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  background-color: #ffffff;
+  color: black;
+  display: none;
+}
+
+.question-container {
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.answer-container {
+  display: flex;
+  margin-top: 75px;
+  flex-direction: column;
+}
+
+.answer {
+  padding: 10px 20px;
+  margin-bottom: 10px;
+  border: 2px solid black; /* Warna border putih */
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* .answer:hover {
+  background-color: yellow
+} */
+
+.player-info {
+  position: fixed;
+  top: 10px; 
+  left: 10px; 
+  color: white; 
+  display: flex; 
+  align-items: flex-end; 
+}
+
+.player-avatar {
+  width: 80px; 
+  height: 80px; 
+  border-radius: 50%; 
+  margin-right: 10px; 
+  object-fit: cover; 
+}
+
+.health-bar {
+  width: 150px; 
+  height: 20px; 
+  background: linear-gradient(to right, red 10px, yellow 40px, green 50px); 
+  margin-right: 5px; 
+  margin-left: -10px;
+  position: relative; 
+  clip-path: polygon(0 0, 100% 0, 100% 10%, 75% 100%, 0 100%); 
+  border: 1px solid black;
+}
+
+.player-name {
+  color: black; 
+  font-weight: bold; 
+  text-align: left; 
+  margin: 0; 
+  position: absolute; 
+  top: 50%; 
+  left: 0px; 
+  transform: translateY(-50%); 
+  padding-left: 5px; 
+}
+
+.stickman.miniboss {
+  position: absolute;
+  right: 10%;
+  bottom: 10%;
+  width: 150px;
+  height: auto;
+}
+
+#enemyAttack {
+  width: 40px; /* Atur lebar gambar sesuai keinginan */
+  height: auto; /* Pertahankan rasio aspek */
+  position: absolute;
+  display: none;
+}
+
+#bamboo {
+  width: 80px; /* Atur lebar gambar sesuai keinginan */
+  height: auto; /* Pertahankan rasio aspek */
+  position: absolute;
+  display: none;
+}
+
+.game-over {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 44px;
+  font-weight: bold;
+  color: red;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 80px;
+}
+
+.button-container button {
+  font-size: 20px;
+  padding: 10px 20px;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}

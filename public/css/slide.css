@@ -1,0 +1,13 @@
+body {
+    background-image: url('/images/judul.png');
+    font-family: Arial, sans-serif;
+    background-size: 98%;
+    background-position: center;
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer; /* Menambahkan kursor pointer ketika dihover */
+}
+
