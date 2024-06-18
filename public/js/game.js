@@ -19,11 +19,14 @@ class StickmanGame {
         this.correctAnswerIndex = 1; // Assume the second answer is correct
         this.timer = null;
         this.timeLeft = 30; // Timer duration in seconds
+        this.playerMovementEnabled = true;
 
         document.addEventListener("keydown", this.movePlayer.bind(this));
     }
 
     movePlayer(event) {
+        if (!this.playerMovementEnabled) return;
+
         if (event.key === "ArrowLeft") {
             this.moveLeft();
         } else if (event.key === "ArrowRight") {
@@ -46,6 +49,7 @@ class StickmanGame {
 
     spawnEnemy() {
         this.enemySpawned = true;
+        this.playerMovementEnabled = false;
         this.enemy.classList.remove("hidden");
         this.showQuestionAndAnswers();
         this.startTimer();
