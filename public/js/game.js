@@ -14,14 +14,32 @@ class StickmanGame {
         this.minibossHealth = 2; // Miniboss requires 2 hits
         this.playerPositionX = 0;
         this.enemyPositionX = window.innerWidth - this.enemy.offsetWidth;
+        this.enemyHealth = 2;
         this.maxAttempts = 3;
         this.remainingAttempts = this.maxAttempts;
         this.correctAnswerIndex = 1; // Assume the second answer is correct
         this.timer = null;
         this.timeLeft = 30; // Timer duration in seconds
         this.playerMovementEnabled = true;
-
+        this.questions = []; // Initialize as empty array
+        this.currentQuestionIndex = 0; // Initialize index
+        this.correctAnswersCount = 0; // Counter for correct answers
+    
         document.addEventListener("keydown", this.movePlayer.bind(this));
+    
+        // Load questions
+        this.loadQuestions();
+    }
+    
+
+    async loadQuestions() {
+        try {
+            const response = await fetch('/api/questions');
+            const questions = await response.json();
+            this.questions = questions;
+        } catch (error) {
+            console.error('Error loading questions:', error);
+        }
     }
 
     movePlayer(event) {
@@ -51,33 +69,32 @@ class StickmanGame {
         this.enemySpawned = true;
         this.playerMovementEnabled = false;
         this.enemy.classList.remove("hidden");
-        this.showQuestionAndAnswers();
+        this.showNextQuestion();
         this.startTimer();
     }
 
-    showQuestionAndAnswers() {
-        const question = "apa lambang sila ke 4";
-        this.questionContainer.innerHTML = question;
+    showNextQuestion() {
+        if (this.currentQuestionIndex >= this.questions.length) {
+            console.log('All questions have been answered');
+            return;
+        }
 
-        const answers = ["Padi kapas", "kepala banteng", "bintang emon", "primogems"];
-        this.answerContainer.innerHTML = "";
-        answers.forEach((answer, index) => {
-            const answerElement = document.createElement("div");
-            answerElement.classList.add("answer");
-            answerElement.textContent = `${index + 1}. ${answer}`;
-            answerElement.addEventListener("click", () => this.checkAnswer(index));
-            this.answerContainer.appendChild(answerElement);
-        });
+        const questionData = this.questions[this.currentQuestionIndex];
+        this.currentQuestionIndex += 1;
 
-        this.questionKotak.style.display = "block";
+        this.showQuestionAndAnswers(questionData);
     }
 
-    showQuestionAndAnswers1() {
-        const question = "Mengembangkan perbuatan luhur yang mencerminkan sikap dan suasana kekeluargaan merupakan pengamalan sila ke";
-        this.questionContainer.innerHTML = question;
-        this.correctAnswerIndex = 3;
+    showQuestionAndAnswers(questionData) {
+        if (!questionData) {
+            console.error('Question data is undefined');
+            return;
+        }
 
-        const answers = ["1", "2", "3", "5"];
+        const question = questionData.question;
+        this.questionContainer.innerHTML = question;
+
+        const answers = JSON.parse(questionData.answers); // Convert JSON string to JavaScript array
         this.answerContainer.innerHTML = "";
         answers.forEach((answer, index) => {
             const answerElement = document.createElement("div");
@@ -87,11 +104,8 @@ class StickmanGame {
             this.answerContainer.appendChild(answerElement);
         });
 
+        this.correctAnswerIndex = questionData.correct_answer_index;
         this.questionKotak.style.display = "block";
-
-        this.correctAnswer = () => {
-            this.shootBambooFromPlayerToEnemy();
-        };
     }
 
     checkAnswer(selectedIndex) {
@@ -110,24 +124,65 @@ class StickmanGame {
         selectedAnswer.style.textDecoration = "line-through";
         selectedAnswer.style.pointerEvents = "none";
     }
-    
-    
 
-    correctAnswer() {
-        clearInterval(this.timer); // Stop the timer
-        if (this.enemy) {
-            this.enemy -= 1;
-            if (this.enemy <= 0) {
-                this.winGame();
-            } else {
-                this.shootBambooFromPlayerToEnemy()
-                this.showQuestionAndAnswers1(); // Show next question for miniboss
-                this.startTimer(); // Restart the timer for next question
-            }
-        } else {
-            this.spawnMiniboss();
-        }
+    async correctAnswer() {
+    clearInterval(this.timer); // Stop the timer
+    this.enemyHealth = (this.enemyHealth || 2) - 1;
+    this.correctAnswersCount += 1; // Increment correct answers count
+    
+    if (this.minibossSpawned) {
+        this.shootBambooFromPlayerToEnemy(true);
+    } else if (!this.answeredFirstQuestion) {
+        this.answeredFirstQuestion = true;
+        this.shootBambooFromPlayerToEnemy();
+        setTimeout(() => {
+            this.loadNextQuestion(); // Load second question from API
+            this.startTimer(); // Restart timer for second question
+        }, 1000); // Adjust time as per animation duration
+    } else {
         this.shootBambooFromPlayerToEnemy(); // Shoot bamboo to enemy after correct answer
+        if (this.enemyHealth <= 0) {
+            this.shootBambooFromPlayerToEnemy(true);
+            setTimeout(() => {
+                if (this.correctAnswersCount >= 2) {
+                    this.disableQuestionDisplay();
+                    this.winGame(); // Trigger win game if two questions answered correctly
+                } else {
+                    this.loadNextQuestion(); // Load next question from API
+                    this.startTimer(); // Restart timer for next question
+                }
+            }, 1000); // Adjust this time to match the animation duration
+        } else {
+            setTimeout(() => {
+                if (this.correctAnswersCount >= 2) {
+                    this.disableQuestionDisplay();
+                    this.winGame(); // Trigger win game if two questions answered correctly
+                } else {
+                    this.loadNextQuestion(); // Load next question from API
+                    this.startTimer(); // Restart timer for next question
+                }
+            }, 1000); // Adjust this time to match the animation duration
+        }
+    }
+}
+
+    
+    
+    async loadNextQuestion() {
+        try {
+            const response = await fetch('/api/questions'); // Adjust API endpoint if needed
+            const questions = await response.json();
+            
+            if (questions.length > 0) {
+                const questionData = questions[this.currentQuestionIndex]; // Get the next question
+                this.currentQuestionIndex += 1;
+                this.showQuestionAndAnswers(questionData);
+            } else {
+                console.log('No more questions available.');
+            }
+        } catch (error) {
+            console.error('Error loading next question:', error);
+        }
     }
     
 
@@ -137,16 +192,16 @@ class StickmanGame {
         const player = document.getElementById("player");
 
         this.questionKotak.style.display = "none";
-   
+
         // Set posisi awal bamboo sesuai dengan posisi pemain
         bamboo.style.left = `${player.offsetLeft + player.offsetWidth / 2}px`;
         bamboo.style.top = `${player.offsetTop + player.offsetHeight / 2}px`;
         bamboo.style.display = "block";
-   
+
         // Hitung jarak antara pemain dan musuh
         const distanceX = enemy.offsetLeft - player.offsetLeft;
         const distanceY = enemy.offsetTop - player.offsetTop;
-   
+
         // Animasi bamboo menuju musuh
         bamboo.animate([
             { transform: 'translate(0, 0)' },
@@ -156,26 +211,26 @@ class StickmanGame {
             easing: 'linear',
             fill: 'forwards'
         });
+
         setTimeout(() => {
             enemy.style.animation = "shake 0.5s ease-in-out"; // Terapkan animasi getar
             setTimeout(() => {
                 enemy.style.animation = ""; // Hapus animasi getar setelah 0.5 detik
             }, 500);
         }, 1000); // Sesuaikan dengan durasi animasi
+
         setTimeout(() => {
             this.questionKotak.style.display = "block";
         }, 1000); // Sesuaikan dengan durasi animasi peluru
     }
-   
-    
 
     wrongAnswer() {
         // Sembunyikan container pertanyaan
         this.questionKotak.style.display = "none";
-    
+
         // Tampilkan peluru dan mulai animasi
         this.shootBulletFromEnemyToPlayer();
-    
+
         // Kurangi lebar health bar setelah beberapa waktu (untuk memberikan waktu animasi peluru)
         setTimeout(() => {
             this.healthBar.style.width = `${this.healthBar.offsetWidth - 50}px`; // Kurangi lebar health bar sebesar 50px
@@ -183,15 +238,11 @@ class StickmanGame {
             if (this.remainingAttempts <= 0) {
                 this.gameOver();
             }
-    
+
             // Tampilkan kembali container pertanyaan setelah serangan selesai
             this.questionKotak.style.display = "block";
-            
-            // Tambahkan kembali event listener pada jawaban yang dipilih
-            this.answerContainer.children[this.selectedIndex].addEventListener("click", () => this.checkAnswer(this.selectedIndex));
         }, 1000); // Sesuaikan waktu ini dengan durasi animasi peluru
     }
-    
 
     shootBulletFromEnemyToPlayer() {
         const bullet = document.getElementById("enemyAttack");
@@ -240,61 +291,25 @@ class StickmanGame {
         this.timerContainer.textContent = `Waktu tersisa: ${this.timeLeft} detik`;
     }
 
-    updateHealthBar() {
-        const healthPercentage = (this.remainingAttempts / this.maxAttempts) * 100;
-        this.healthBar.style.width = `${healthPercentage}%`;
-    }
-
-    spawnMiniboss() {
-        this.enemy.classList.add("hidden");
-        this.miniboss.classList.remove("hidden");
-        this.minibossSpawned = true;
-        alert("Miniboss muncul! Jawab 2 Pertanyaan untuk kalahkan miniboss.");
-        this.showQuestionAndAnswers();
-        this.startTimer(); 
+    gameOver() {
+        this.playerMovementEnabled = false;
+        alert("Kamu Kalah!.");
+        location.reload();
     }
 
     winGame() {
         clearInterval(this.timer); // Stop the timer
         alert("Kamu menang!");
+    
+        this.disableQuestionDisplay();
+    
         this.goToNextLevel();
     }
-
-    gameOver() {
-        clearInterval(this.timer); // Stop the timer
-        this.questionKotak.style.display = "none"; // Sembunyikan container pertanyaan
-        this.showGameOver(); // Tampilkan teks game over dan tombol
+    
+    disableQuestionDisplay() {
+        // Hide question and answer container
+        this.questionKotak.style.display = "none";
     }
-    
-    showGameOver() {
-    const gameOverText = document.createElement("div");
-    gameOverText.textContent = "Game Over";
-    gameOverText.classList.add("game-over");
-    document.body.appendChild(gameOverText);
-
-    const buttonContainer = document.createElement("div");
-    buttonContainer.classList.add("button-container");
-    document.body.appendChild(buttonContainer);
-
-    const restartButton = document.createElement("button");
-    restartButton.textContent = "Restart";
-    restartButton.addEventListener("click", () => {
-        window.location.reload(); // Reload halaman untuk restart
-    });
-    buttonContainer.appendChild(restartButton);
-
-    const menuButton = document.createElement("button");
-    menuButton.textContent = "Menu";
-    menuButton.addEventListener("click", () => {
-        window.location.href = stageRoute; // Pergi ke halaman menu
-    });
-    buttonContainer.appendChild(menuButton);
-
-    // Hapus container pertanyaan dari dokumen
-    this.questionKotak.parentNode.removeChild(this.questionKotak);
-}
-
-    
 
     goToNextLevel() {
         localStorage.setItem('stage2Unlocked', 'true');
@@ -302,5 +317,6 @@ class StickmanGame {
     }
 }
 
-const stickmanGame = new StickmanGame();
-
+document.addEventListener("DOMContentLoaded", function() {
+    const game = new StickmanGame();
+});
