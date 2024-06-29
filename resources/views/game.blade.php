@@ -7,6 +7,7 @@
 <body>
   <button id="newGameBtn">New Game</button>
   <button id="loadGameBtn">Load Game</button>
+  <button id="EditGameBtn">Edit Soal</button>
 
   <script>
     class Game {
@@ -14,6 +15,8 @@
         document.getElementById('newGameBtn').addEventListener('click', this.startNewGame.bind(this));
 
         document.getElementById('loadGameBtn').addEventListener('click', this.loadGame.bind(this));
+
+        document.getElementById('EditGameBtn').addEventListener('click', this.editGame.bind(this));
       }
 
       startNewGame() {
@@ -21,7 +24,11 @@
       }
 
       loadGame() {
-        window.location.href = "{{ route('stage') }}";
+        window.location.href = "{{ route('load') }}";
+      }
+
+      editGame() {
+        window.location.href = "{{ route('guru.login') }}";
       }
     }
 

@@ -23,6 +23,10 @@ Route::get('/game', function () {
     return view('game');
 })->name('game');
 
+Route::get('/load', function () {
+    return view('load');
+})->name('load');
+
 Route::get('/slideshow', function () {
     return view('slideshow');
 })->name('slideshow');

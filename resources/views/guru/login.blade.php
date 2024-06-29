@@ -4,6 +4,14 @@
 <head>
     <title>Guru Login</title>
     <link rel="stylesheet" type="text/css" href="{{ asset('css/login.css') }}">
+    <style>
+        .back-button {
+            background-color: #6c757d;
+        }
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+    </style>
 </head>
 <body>
     <?php
@@ -33,6 +41,7 @@
                 </div>
                 <button type="submit">Login</button>
             </form>
+            <button onclick="window.location.href='{{ url('/game') }}'" class="back-button">Kembali</button>
         </div>
     </div>
 </body>

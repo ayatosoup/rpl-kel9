@@ -24,6 +24,7 @@ class StickmanGame {
         this.questions = []; // Initialize as empty array
         this.currentQuestionIndex = 0; // Initialize index
         this.correctAnswersCount = 0; // Counter for correct answers
+        this.currentQuestion = null; // Menyimpan pertanyaan yang sedang ditampilkan
     
         document.addEventListener("keydown", this.movePlayer.bind(this));
     
