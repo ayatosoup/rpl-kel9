@@ -11,36 +11,44 @@ class StickmanGame {
         this.winLink = document.getElementById("winLink");
         this.enemySpawned = false;
         this.minibossSpawned = false;
-        this.minibossHealth = 2; // Miniboss requires 2 hits
+        this.minibossHealth = 2; 
         this.playerPositionX = 0;
         this.enemyPositionX = window.innerWidth - this.enemy.offsetWidth;
         this.enemyHealth = 2;
         this.maxAttempts = 3;
         this.remainingAttempts = this.maxAttempts;
-        this.correctAnswerIndex = 1; // Assume the second answer is correct
+        this.correctAnswerIndex = 1; 
         this.timer = null;
-        this.timeLeft = 30; // Timer duration in seconds
+        this.timeLeft = 30; 
         this.playerMovementEnabled = true;
-        this.questions = []; // Initialize as empty array
-        this.currentQuestionIndex = 0; // Initialize index
-        this.correctAnswersCount = 0; // Counter for correct answers
-        this.currentQuestion = null; // Menyimpan pertanyaan yang sedang ditampilkan
+        this.questions = []; 
+        this.currentQuestionIndex = 0; 
+        this.correctAnswersCount = 0; 
+        this.currentQuestion = null; 
+        this.answeredQuestions = new Set(); 
     
         document.addEventListener("keydown", this.movePlayer.bind(this));
     
         // Load questions
         this.loadQuestions();
     }
-    
 
     async loadQuestions() {
         try {
             const response = await fetch('/api/questions');
             const questions = await response.json();
-            this.questions = questions;
+            this.questions = this.shuffleArray(questions); 
         } catch (error) {
             console.error('Error loading questions:', error);
         }
+    }
+
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
 
     movePlayer(event) {
@@ -75,14 +83,18 @@ class StickmanGame {
     }
 
     showNextQuestion() {
-        if (this.currentQuestionIndex >= this.questions.length) {
+        if (this.answeredQuestions.size >= this.questions.length) {
             console.log('All questions have been answered');
             return;
         }
 
-        const questionData = this.questions[this.currentQuestionIndex];
-        this.currentQuestionIndex += 1;
+        let questionData;
+        do {
+            const randomIndex = Math.floor(Math.random() * this.questions.length);
+            questionData = this.questions[randomIndex];
+        } while (this.answeredQuestions.has(questionData.id));
 
+        this.answeredQuestions.add(questionData.id);
         this.showQuestionAndAnswers(questionData);
     }
 
@@ -95,7 +107,7 @@ class StickmanGame {
         const question = questionData.question;
         this.questionContainer.innerHTML = question;
 
-        const answers = JSON.parse(questionData.answers); // Convert JSON string to JavaScript array
+        const answers = JSON.parse(questionData.answers); 
         this.answerContainer.innerHTML = "";
         answers.forEach((answer, index) => {
             const answerElement = document.createElement("div");
@@ -127,65 +139,45 @@ class StickmanGame {
     }
 
     async correctAnswer() {
-    clearInterval(this.timer); // Stop the timer
-    this.enemyHealth = (this.enemyHealth || 2) - 1;
-    this.correctAnswersCount += 1; // Increment correct answers count
-    
-    if (this.minibossSpawned) {
-        this.shootBambooFromPlayerToEnemy(true);
-    } else if (!this.answeredFirstQuestion) {
-        this.answeredFirstQuestion = true;
-        this.shootBambooFromPlayerToEnemy();
-        setTimeout(() => {
-            this.loadNextQuestion(); // Load second question from API
-            this.startTimer(); // Restart timer for second question
-        }, 1000); // Adjust time as per animation duration
-    } else {
-        this.shootBambooFromPlayerToEnemy(); // Shoot bamboo to enemy after correct answer
-        if (this.enemyHealth <= 0) {
-            this.shootBambooFromPlayerToEnemy(true);
-            setTimeout(() => {
-                if (this.correctAnswersCount >= 2) {
-                    this.disableQuestionDisplay();
-                    this.winGame(); // Trigger win game if two questions answered correctly
-                } else {
-                    this.loadNextQuestion(); // Load next question from API
-                    this.startTimer(); // Restart timer for next question
-                }
-            }, 1000); // Adjust this time to match the animation duration
-        } else {
-            setTimeout(() => {
-                if (this.correctAnswersCount >= 2) {
-                    this.disableQuestionDisplay();
-                    this.winGame(); // Trigger win game if two questions answered correctly
-                } else {
-                    this.loadNextQuestion(); // Load next question from API
-                    this.startTimer(); // Restart timer for next question
-                }
-            }, 1000); // Adjust this time to match the animation duration
-        }
-    }
-}
+        clearInterval(this.timer); 
+        this.enemyHealth = (this.enemyHealth || 2) - 1;
+        this.correctAnswersCount += 1; 
 
-    
-    
-    async loadNextQuestion() {
-        try {
-            const response = await fetch('/api/questions'); // Adjust API endpoint if needed
-            const questions = await response.json();
-            
-            if (questions.length > 0) {
-                const questionData = questions[this.currentQuestionIndex]; // Get the next question
-                this.currentQuestionIndex += 1;
-                this.showQuestionAndAnswers(questionData);
+        if (this.minibossSpawned) {
+            this.shootBambooFromPlayerToEnemy(true);
+        } else if (!this.answeredFirstQuestion) {
+            this.answeredFirstQuestion = true;
+            this.shootBambooFromPlayerToEnemy();
+            setTimeout(() => {
+                this.showNextQuestion(); 
+                this.startTimer(); 
+            }, 1000);
+        } else {
+            this.shootBambooFromPlayerToEnemy(); 
+            if (this.enemyHealth <= 0) {
+                this.shootBambooFromPlayerToEnemy(true);
+                setTimeout(() => {
+                    if (this.correctAnswersCount >= 2) {
+                        this.disableQuestionDisplay();
+                        this.winGame(); 
+                    } else {
+                        this.showNextQuestion(); 
+                        this.startTimer(); 
+                    }
+                }, 1000); 
             } else {
-                console.log('No more questions available.');
+                setTimeout(() => {
+                    if (this.correctAnswersCount >= 2) {
+                        this.disableQuestionDisplay();
+                        this.winGame(); 
+                    } else {
+                        this.showNextQuestion(); 
+                        this.startTimer(); 
+                    }
+                }, 1000); 
             }
-        } catch (error) {
-            console.error('Error loading next question:', error);
         }
     }
-    
 
     shootBambooFromPlayerToEnemy() {
         const bamboo = document.getElementById("bamboo");
@@ -194,55 +186,48 @@ class StickmanGame {
 
         this.questionKotak.style.display = "none";
 
-        // Set posisi awal bamboo sesuai dengan posisi pemain
         bamboo.style.left = `${player.offsetLeft + player.offsetWidth / 2}px`;
         bamboo.style.top = `${player.offsetTop + player.offsetHeight / 2}px`;
         bamboo.style.display = "block";
 
-        // Hitung jarak antara pemain dan musuh
         const distanceX = enemy.offsetLeft - player.offsetLeft;
         const distanceY = enemy.offsetTop - player.offsetTop;
 
-        // Animasi bamboo menuju musuh
         bamboo.animate([
             { transform: 'translate(0, 0)' },
             { transform: `translate(${distanceX}px, ${distanceY}px)` }
         ], {
-            duration: 1000, // Durasi animasi dalam milidetik
+            duration: 1000, 
             easing: 'linear',
             fill: 'forwards'
         });
 
         setTimeout(() => {
-            enemy.style.animation = "shake 0.5s ease-in-out"; // Terapkan animasi getar
+            enemy.style.animation = "shake 0.5s ease-in-out"; 
             setTimeout(() => {
-                enemy.style.animation = ""; // Hapus animasi getar setelah 0.5 detik
+                enemy.style.animation = "";
             }, 500);
-        }, 1000); // Sesuaikan dengan durasi animasi
+        }, 1000); 
 
         setTimeout(() => {
             this.questionKotak.style.display = "block";
-        }, 1000); // Sesuaikan dengan durasi animasi peluru
+        }, 1000); 
     }
 
     wrongAnswer() {
-        // Sembunyikan container pertanyaan
         this.questionKotak.style.display = "none";
 
-        // Tampilkan peluru dan mulai animasi
         this.shootBulletFromEnemyToPlayer();
 
-        // Kurangi lebar health bar setelah beberapa waktu (untuk memberikan waktu animasi peluru)
         setTimeout(() => {
-            this.healthBar.style.width = `${this.healthBar.offsetWidth - 50}px`; // Kurangi lebar health bar sebesar 50px
+            this.healthBar.style.width = `${this.healthBar.offsetWidth - 50}px`; 
             this.remainingAttempts -= 1;
             if (this.remainingAttempts <= 0) {
                 this.gameOver();
             }
 
-            // Tampilkan kembali container pertanyaan setelah serangan selesai
             this.questionKotak.style.display = "block";
-        }, 1000); // Sesuaikan waktu ini dengan durasi animasi peluru
+        }, 1000); 
     }
 
     shootBulletFromEnemyToPlayer() {
@@ -250,33 +235,30 @@ class StickmanGame {
         const enemy = document.getElementById("enemy");
         const player = document.getElementById("player");
 
-        // Set posisi awal peluru sesuai dengan posisi musuh
         bullet.style.left = `${enemy.offsetLeft + enemy.offsetWidth / 2}px`;
         bullet.style.top = `${enemy.offsetTop + enemy.offsetHeight / 2}px`;
         bullet.style.display = "block";
 
-        // Hitung jarak antara musuh dan pemain
         const distanceX = player.offsetLeft - enemy.offsetLeft;
         const distanceY = player.offsetTop - enemy.offsetTop;
 
-        // Animasi peluru menuju pemain
         bullet.animate([
             { transform: 'translate(0, 0)' },
             { transform: `translate(${distanceX}px, ${distanceY}px)` }
         ], {
-            duration: 1000, // Durasi animasi dalam milidetik
+            duration: 1000,
             easing: 'linear',
             fill: 'forwards'
         });
 
-        // Sembunyikan peluru setelah animasi selesai
+        
         setTimeout(() => {
             bullet.style.display = "none";
-        }, 1000); // Sesuaikan dengan durasi animasi
+        }, 1000); 
     }
 
     startTimer() {
-        this.timeLeft = 30; // Reset the timer
+        this.timeLeft = 30; 
         this.updateTimerDisplay();
         this.timer = setInterval(() => {
             this.timeLeft -= 1;
@@ -299,7 +281,7 @@ class StickmanGame {
     }
 
     winGame() {
-        clearInterval(this.timer); // Stop the timer
+        clearInterval(this.timer); 
         alert("Kamu menang!");
     
         this.disableQuestionDisplay();
@@ -308,7 +290,6 @@ class StickmanGame {
     }
     
     disableQuestionDisplay() {
-        // Hide question and answer container
         this.questionKotak.style.display = "none";
     }
 

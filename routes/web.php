@@ -31,6 +31,26 @@ Route::get('/slideshow', function () {
     return view('slideshow');
 })->name('slideshow');
 
+Route::get('/slideshow2', function () {
+    return view('slideshow2');
+})->name('slideshow2');
+
+Route::get('/slideshow3', function () {
+    return view('slideshow3');
+})->name('slideshow3');
+
+Route::get('/slideshow4', function () {
+    return view('slideshow4');
+})->name('slideshow4');
+
+Route::get('/slideshow5', function () {
+    return view('slideshow5');
+})->name('slideshow5');
+
+Route::get('/gameplaylast', function () {
+    return view('gameplaylast');
+})->name('gameplaylast');
+
 Route::get('/gameplay', function () {
     return view('gameplay');
 })->name('gameplay');
