@@ -47,6 +47,10 @@ Route::get('/slideshow5', function () {
     return view('slideshow5');
 })->name('slideshow5');
 
+Route::get('/endslideshow', function () {
+    return view('endslideshow');
+})->name('endslideshow');
+
 Route::get('/gameplaylast', function () {
     return view('gameplaylast');
 })->name('gameplaylast');

@@ -39,16 +39,6 @@
             width: 250px; 
             height: auto;
         }
-        .arrow {
-            position: absolute;
-            top: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: auto;
-            cursor: pointer;
-            display: none; /* Initially hidden */
-        }
     </style>
 </head>
 <body>
@@ -58,48 +48,72 @@
         <img src="{{ asset('images/map2.png') }}" alt="Image 3" class="image image-bottom-left" onclick="goToSlideshow3()">
         <img src="{{ asset('images/map4.png') }}" alt="Image 4" class="image image-bottom-right" onclick="goToSlideshow4()">
         <img src="{{ asset('images/map5.png') }}" alt="Image 5" class="image image-center" onclick="goToSlideshow5()">
-        <img src="{{ asset('images/rumah.png') }}" alt="Next Stage Arrow" class="arrow" id="nextStageArrow" onclick="goToGameplayLast()">
     </div>
     <script>
-        // Retrieve clickCount from localStorage or initialize it
-        let clickCount = localStorage.getItem('clickCount') ? parseInt(localStorage.getItem('clickCount')) : 0;
+        // Retrieve played slideshows from localStorage or initialize it
+        let playedSlideshows = localStorage.getItem('playedSlideshows') ? JSON.parse(localStorage.getItem('playedSlideshows')) : [];
 
-        // Show the next stage arrow if clickCount is greater than or equal to 1
-        if (clickCount >= 1) {
-            document.getElementById("nextStageArrow").style.display = "block";
+        function markAsPlayed(slideshow) {
+            if (!playedSlideshows.includes(slideshow)) {
+                playedSlideshows.push(slideshow);
+                localStorage.setItem('playedSlideshows', JSON.stringify(playedSlideshows));
+            }
+            checkCompletion();
         }
 
-        function incrementClickCount() {
-            clickCount++;
-            localStorage.setItem('clickCount', clickCount); // Save clickCount to localStorage
-            if (clickCount >= 1) {
-                document.getElementById("nextStageArrow").style.display = "block";
+        function checkCompletion() {
+            if (playedSlideshows.length >= 5) {
+                window.location.href = "{{ route('endslideshow') }}";
             }
         }
 
+        function showAlert() {
+            alert("Stage ini sudah dimainkan dan tidak bisa dimainkan lagi.");
+        }
+
         function goToSlideshow1() {
-            incrementClickCount();
-            window.location.href = "{{ route('slideshow') }}";
+            if (playedSlideshows.includes('slideshow1')) {
+                showAlert();
+            } else {
+                markAsPlayed('slideshow1');
+                window.location.href = "{{ route('slideshow') }}";
+            }
         }
         function goToSlideshow2() {
-            incrementClickCount();
-            window.location.href = "{{ route('slideshow2') }}";
+            if (playedSlideshows.includes('slideshow2')) {
+                showAlert();
+            } else {
+                markAsPlayed('slideshow2');
+                window.location.href = "{{ route('slideshow2') }}";
+            }
         }
         function goToSlideshow3() {
-            incrementClickCount();
-            window.location.href = "{{ route('slideshow3') }}";
+            if (playedSlideshows.includes('slideshow3')) {
+                showAlert();
+            } else {
+                markAsPlayed('slideshow3');
+                window.location.href = "{{ route('slideshow3') }}";
+            }
         }
         function goToSlideshow4() {
-            incrementClickCount();
-            window.location.href = "{{ route('slideshow4') }}";
+            if (playedSlideshows.includes('slideshow4')) {
+                showAlert();
+            } else {
+                markAsPlayed('slideshow4');
+                window.location.href = "{{ route('slideshow4') }}";
+            }
         }
         function goToSlideshow5() {
-            incrementClickCount();
-            window.location.href = "{{ route('slideshow5') }}";
+            if (playedSlideshows.includes('slideshow5')) {
+                showAlert();
+            } else {
+                markAsPlayed('slideshow5');
+                window.location.href = "{{ route('slideshow5') }}";
+            }
         }
-        function goToGameplayLast() {
-            window.location.href = "{{ route('gameplaylast') }}";
-        }
+
+        // Check completion status on page load
+        checkCompletion();
     </script>
 </body>
 </html>

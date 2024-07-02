@@ -1,6 +1,7 @@
 class StickmanGame {
     constructor() {
         this.player = document.getElementById("player");
+        this.playerSpeech = document.getElementById("playerSpeech");
         this.enemy = document.getElementById("enemy");
         this.miniboss = document.getElementById("miniboss");
         this.questionKotak = document.querySelector(".question-kotak");
@@ -275,9 +276,11 @@ class StickmanGame {
     }
 
     gameOver() {
-        this.playerMovementEnabled = false;
-        alert("Kamu Kalah!.");
-        location.reload();
+        if (confirm("Kamu Kalah! Apakah kamu ingin mencoba lagi?")) {
+            location.reload();
+        } else {
+            window.location.href = gameRoute;
+        }
     }
 
     winGame() {

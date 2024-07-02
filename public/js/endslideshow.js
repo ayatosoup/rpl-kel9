@@ -19,7 +19,7 @@ function changeBackground() {
     clickCount++;
     
     if (clickCount === images.length) {
-        window.location.href = "/gameplaylast"; 
+        window.location.href = "/game"; 
     } else {
         document.body.style.backgroundImage = "url('" + images[clickCount] + "')";
     }

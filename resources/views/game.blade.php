@@ -3,6 +3,12 @@
 <head>
   <title>Makarovni</title>
   <link rel="stylesheet" type="text/css" href="{{ asset('css/styles.css') }}">
+  <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Clear localStorage when game.blade is loaded
+            localStorage.clear();
+        });
+    </script>
 </head>
 <body>
   <button id="newGameBtn">New Game</button>
